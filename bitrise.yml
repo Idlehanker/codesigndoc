@@ -1,9 +1,9 @@
-format_version: 1.1.0
+format_version:          1.1.0
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - BITRISE_BIN_NAME: codesigndoc
+  - BITRISE_BIN_NAME:    codesigndoc
   - GITHUB_RELEASES_URL: https://github.com/bitrise-tools/${BITRISE_BIN_NAME}/releases
 
 workflows:
@@ -11,9 +11,9 @@ workflows:
   _install_test_tools:
     steps:
     - script:
-        title: Install required testing tools
+        title:           Install required testing tools
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -ex
             # Check for unhandled errors
@@ -24,37 +24,37 @@ workflows:
   _test:
     steps:
     - script:
-        title: GOLIST_WITHOUT_VENDOR
+        title:           GOLIST_WITHOUT_VENDOR
         inputs:
-        - content: |-
+        - content:       |-
             set -ex
             no_vendor_paths="$(go list ./... | grep -v vendor)"
             envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
     - script:
-        title: Go Test
+        title:           Go Test
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -ex
             go test $GOLIST_WITHOUT_VENDOR
     - script:
-        title: Go Vet
+        title:           Go Vet
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -ex
             go vet $GOLIST_WITHOUT_VENDOR
     - script:
-        title: Err check
+        title:           Err check
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -ex
             errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
     - script:
-        title: Go Lint
+        title:           Go Lint
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -e
 
@@ -73,9 +73,9 @@ workflows:
     - _test
     steps:
     - script:
-        title: Test & install
+        title:           Test & install
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -ex
             go install
@@ -83,9 +83,9 @@ workflows:
   godeps-update:
     steps:
     - script:
-        title: Dependency update
+        title:           Dependency update
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -ex
             go get -u github.com/tools/godep
@@ -104,31 +104,31 @@ workflows:
     - _test
     steps:
     - slack:
-        run_if: .IsCI
+        run_if:          .IsCI
         inputs:
-        - webhook_url: $INTERNAL_DEV_SLACK_WEBHOOK_URL
-        - channel: $INTERNAL_DEV_SLACK_CHANNEL
+        - webhook_url:   $INTERNAL_DEV_SLACK_WEBHOOK_URL
+        - channel:       $INTERNAL_DEV_SLACK_CHANNEL
         - from_username: ${BITRISE_BIN_NAME} - CI - OK
         - from_username_on_error: ${BITRISE_BIN_NAME} - CI - ERROR
-        - emoji: ":white_check_mark:"
+        - emoji:         ":white_check_mark:"
         - emoji_on_error: ":no_entry_sign:"
-        - message: |-
+        - message:       |-
             CI was successful on branch: *${BITRISE_GIT_BRANCH}*
 
-            Build URL: ${BITRISE_BUILD_URL}
+            Build URL:   ${BITRISE_BUILD_URL}
         - message_on_error: |-
             CI FAILED on branch: *${BITRISE_GIT_BRANCH}*
 
-            Build URL: ${BITRISE_BUILD_URL}
+            Build URL:   ${BITRISE_BUILD_URL}
 
   create-release:
     before_run:
     - _test
     steps:
     - script:
-        title: Creating deploy
+        title:           Creating deploy
         inputs:
-        - content: |-
+        - content:       |-
             #!/bin/bash
             set -ex
             if [ -f _bin/tmpbin ] ; then
@@ -146,9 +146,9 @@ workflows:
             # generate changelog
             releaseman create-changelog --version "${binversion}"
     - script:
-        title: Creating release install_wrap
+        title:           Creating release install_wrap
         inputs:
-        - content: |-
+        - content:       |-
             template_path = "./_scripts/install_wrap.sh.template"
             puts " * template_path: #{template_path}"
             template_content = File.read(template_path)
@@ -172,11 +172,11 @@ workflows:
             File.open(target_path, "w") do |f|
               f.write(final_content)
             end
-        - runner_bin: ruby
+        - runner_bin:    ruby
     # - script:
-    #     title: Creating release changelog template
+    #     title:         Creating release changelog template
     #     inputs:
-    #     - content: |-
+    #     - content:     |-
     #         changelog_path = "./_changelogs/#{ENV['RELEASE_VERSION']}.md"
     #         puts " * changelog_path: #{changelog_path}"
     #         template_content = File.read("./_changelogs/template.md")
@@ -184,8 +184,8 @@ workflows:
     #         File.open(changelog_path, "w") do |f|
     #           f.write(changelog_content)
     #         end
-    #     - runner_bin: ruby
+    #     - runner_bin:  ruby
     # - script:
-    #     title: Open _bin folder
+    #     title:         Open _bin folder
     #     inputs:
-    #     - content: open _bin
+    #     - content:     open _bin
